@@ -1,19 +1,53 @@
 from django.contrib import admin
 
-from recipes.models import Recipe, IngredientInRecipe, Favorite, ShoppingCart
+from foodgram.settings import EMPTY
 
-admin.site.register(IngredientInRecipe)
-admin.site.register(Favorite)
-admin.site.register(ShoppingCart)
+from .models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
+
+
+class IngredientsInLine(admin.TabularInline):
+    model = Recipe.ingredients.through
+
+
+@admin.register(Favorite)
+class FavoriteAdmin(admin.ModelAdmin):
+    list_display = ['id', 'user', 'recipe']
+    search_fields = ['user__username', 'user__email']
+    empty_value_display = EMPTY
+
+
+@admin.register(Ingredient)
+class IngredientAdmin(admin.ModelAdmin):
+    list_display = ['id', 'name', 'measurement_unit']
+    search_fields = ['name']
+    empty_value_display = EMPTY
 
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
+    list_display = ['id', 'name', 'author', 'favorites']
+    search_fields = ['name', 'author__username']
+    list_filter = ['tags']
+    empty_value_display = EMPTY
+    inlines = (
+        IngredientsInLine,
+    )
 
-    list_display = ('name', 'author', 'in_favorite')
-    list_filter = ('author', 'name', 'tags')
+    def favorites(self, obj):
+        if Favorite.objects.filter(recipe=obj).exists():
+            return Favorite.objects.filter(recipe=obj).count()
+        return 0
 
-    def in_favorite(self, obj):
 
-        count = obj.in_favorite.all().count()
-        return count
+@admin.register(ShoppingCart)
+class ShoppingCartAdmin(admin.ModelAdmin):
+    list_display = ['id', 'user', 'recipe']
+    search_fields = ['user__username', 'user__email']
+    empty_value_display = EMPTY
+
+
+@admin.register(Tag)
+class TagAdmin(admin.ModelAdmin):
+    list_display = ['id', 'name', 'color', 'slug']
+    search_fields = ['name', 'slug']
+    empty_value_display = EMPTY

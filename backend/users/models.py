@@ -1,53 +1,53 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db import models
+from django.db.models import UniqueConstraint
+
+from .validators import validate_username
 
 
 class User(AbstractUser):
+    """ Кастомная модель пользователя. """
 
-    email = models.EmailField(
-        unique=True,
-        max_length=254,
-        verbose_name='электронная почта'
-    )
+    email = models.EmailField('Почта', max_length=254, unique=True)
+    first_name = models.CharField('Имя', max_length=150, blank=False)
+    last_name = models.CharField('Фамилия', max_length=150, blank=False)
     username = models.CharField(
+        'Юзернейм',
         max_length=150,
-        unique=True,
-        verbose_name='имя пользователя'
-    )
-    password = models.CharField(max_length=150, verbose_name='пароль')
-    first_name = models.CharField(max_length=150, verbose_name='имя')
-    last_name = models.CharField(max_length=150, verbose_name='фамилия')
+        validators=[validate_username])
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
     class Meta:
-        verbose_name = 'пользователь'
-        verbose_name_plural = 'пользователи'
+        ordering = ['-pk']
 
     def __str__(self):
         return self.username
 
 
-class Subscribe(models.Model):
+class Subscription(models.Model):
+    """ Модель подписок. """
 
-    subscriber = models.ForeignKey(
+    user = models.ForeignKey(
         User,
+        related_name='follower',
         on_delete=models.CASCADE,
-        related_name='subscribers',
-        verbose_name='подписчик'
+        verbose_name='Подписчик'
     )
     author = models.ForeignKey(
         User,
+        related_name='author',
         on_delete=models.CASCADE,
-        related_name='authors',
-        verbose_name='автор'
+        verbose_name='Автор'
     )
 
     class Meta:
-        verbose_name = 'подписка'
-        verbose_name_plural = 'подписки'
         constraints = [
-            models.UniqueConstraint(fields=['subscriber', 'author'],
-                                    name='unique_subscribe')
+            UniqueConstraint(
+                fields=['user', 'author'],
+                name='user_author_unique'
+            )
         ]
 
     def __str__(self):
-        return f'{self.subscriber} - {self.author}'
+        return f'Пользователь {self.user} подписался на {self.author}'

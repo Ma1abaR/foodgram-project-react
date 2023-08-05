@@ -1,28 +1,45 @@
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from djoser.views import TokenCreateView, TokenDestroyView
 
-from .views import (TagViewSet, IngredientViewSet, UserViewSet, RecipeViewSet)
+from .views import (FavoriteView, IngredientViewSet, RecipeViewSet,
+                    ShoppingCartView, ShowSubscriptionsView, SubscribeView,
+                    TagViewSet, download_shopping_cart)
 
 app_name = 'api'
 
-users_router_v1 = DefaultRouter()
-users_router_v1.register('users', UserViewSet, basename="users")
+router = DefaultRouter()
 
-recipes_router_v1 = DefaultRouter()
-recipes_router_v1.register(r'', RecipeViewSet)
-
-ingredients_router_v1 = DefaultRouter()
-ingredients_router_v1.register(r'', IngredientViewSet)
-
-tags_router_v1 = DefaultRouter()
-tags_router_v1.register(r'', TagViewSet)
+router.register('ingredients', IngredientViewSet, basename='ingredients')
+router.register('recipes', RecipeViewSet, basename='recipes')
+router.register('tags', TagViewSet, basename='tags')
 
 urlpatterns = [
-    path(r'auth/token/login/', TokenCreateView.as_view(), name='login'),
-    path(r'auth/token/logout/', TokenDestroyView.as_view(), name='logout'),
-    path(r'users/', include(users_router_v1.urls)),
-    path(r'recipes/', include(recipes_router_v1.urls)),
-    path(r'ingredients/', include(ingredients_router_v1.urls)),
-    path(r'tags/', include(tags_router_v1.urls)),
+    path(
+        'recipes/download_shopping_cart/',
+        download_shopping_cart,
+        name='download_shopping_cart'
+    ),
+    path(
+        'recipes/<int:id>/shopping_cart/',
+        ShoppingCartView.as_view(),
+        name='shopping_cart'
+    ),
+    path(
+        'recipes/<int:id>/favorite/',
+        FavoriteView.as_view(),
+        name='favorite'
+    ),
+    path(
+        'users/<int:id>/subscribe/',
+        SubscribeView.as_view(),
+        name='subscribe'
+    ),
+    path(
+        'users/subscriptions/',
+        ShowSubscriptionsView.as_view(),
+        name='subscriptions'
+    ),
+    path('auth/', include('djoser.urls.authtoken')),
+    path('', include('djoser.urls')),
+    path('', include(router.urls)),
 ]
