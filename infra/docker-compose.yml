@@ -11,7 +11,7 @@ services:
 
   backend:
     image: ma1abar/foodgram_backend:latest
-    restart: always
+    restart: on-failure
     volumes:
       - data_value:/code/data/
       - static_value:/code/static/
