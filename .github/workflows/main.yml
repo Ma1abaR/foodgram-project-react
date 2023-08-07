@@ -42,7 +42,7 @@ jobs:
         with:
           push: true
           context: ./backend
-          tags: ma1abar/backend:latest
+          tags: ma1abar/foodgram_backend:latest
 
   deploy:
     runs-on: ubuntu-latest
@@ -56,8 +56,8 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
           script: |
-            sudo docker pull ma1abar/backend:latest
-            sudo docker pull ma1abar/frontend:latest
+            sudo docker pull ma1abar/foodgram_backend:latest
+            sudo docker pull ma1abar/foodgram_frontend:latest
             sudo docker-compose stop
             sudo docker-compose rm backend
             sudo docker-compose rm frontend
