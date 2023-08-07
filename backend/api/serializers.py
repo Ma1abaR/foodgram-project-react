@@ -1,9 +1,6 @@
+from django.db import transaction
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
-from django.db import transaction
-from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator
-
 from recipes.models import (
     Favorite,
     Ingredient,
@@ -13,6 +10,8 @@ from recipes.models import (
     ShoppingCart,
     Tag,
 )
+from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 from users.models import Subscription, User
 
 
