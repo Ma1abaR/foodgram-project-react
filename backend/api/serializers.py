@@ -36,7 +36,10 @@ class CustomUserSerializer(UserSerializer):
         request = self.context.get("request")
         if request is None or request.user.is_anonymous:
             return False
-        return Subscription.objects.filter(user=request.user, author=obj).exists()
+        return Subscription.objects.filter(
+            user=request.user,
+            author=obj
+        ).exists()
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -129,7 +132,10 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
 
     author = CustomUserSerializer(read_only=True)
     ingredients = AddIngredientRecipeSerializer(many=True)
-    tags = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(), many=True)
+    tags = serializers.PrimaryKeyRelatedField(
+        queryset=Tag.objects.all(),
+        many=True
+    )
     image = Base64ImageField()
 
     class Meta:

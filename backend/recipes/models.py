@@ -38,7 +38,8 @@ class Tag(models.Model):
 
 class Recipe(models.Model):
     tags = models.ManyToManyField(
-        Tag, through="RecipeTag", verbose_name="Теги", related_name="tags"
+        Tag, through="RecipeTag",
+        verbose_name="Теги", related_name="tags"
     )
     author = models.ForeignKey(
         User,
@@ -51,12 +52,19 @@ class Recipe(models.Model):
     )
     image = models.ImageField("Изображение", upload_to="recipes/images/")
     name = models.CharField("Название рецепта", max_length=200)
-    text = models.TextField("Описание рецепта", help_text="Введите описание рецепта")
+    text = models.TextField("Описание рецепта",
+                            help_text="Введите описание рецепта")
     cooking_time = models.PositiveIntegerField(
         verbose_name="Время приготовления",
         validators=[
-            MinValueValidator(1, message="Время приготовления должно быть не менее 1 минуты!"),
-            MaxValueValidator(720, message="Время приготовления не должно превышать 720 минут!"),
+            MinValueValidator(
+                1,
+                message="Время приготовления должно быть не менее 1 минуты!"
+            ),
+            MaxValueValidator(
+                720,
+                message="Время приготовления не должно превышать 720 минут!"
+            ),
         ],
     )
     pub_date = models.DateTimeField(
@@ -74,31 +82,54 @@ class Recipe(models.Model):
 
 
 class RecipeIngredient(models.Model):
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, verbose_name="Рецепт")
+    recipe = models.ForeignKey(Recipe,
+                               on_delete=models.CASCADE,
+                               verbose_name="Рецепт")
     ingredient = models.ForeignKey(
-        Ingredient, on_delete=models.CASCADE, verbose_name="Ингредиент"
+        Ingredient,
+        on_delete=models.CASCADE,
+        verbose_name="Ингредиент"
     )
     amount = models.IntegerField(
         "Количество",
         validators=[
-            MinValueValidator(1, message="Количество ингредиента должно быть больше 0!"),
-            MaxValueValidator(100, message="Количество ингредиентов не должно превышать 100!"),
+            MinValueValidator(
+                1,
+                message="Количество ингредиента должно быть больше 0!"
+            ),
+            MaxValueValidator(
+                100,
+                message="Количество ингредиентов не должно превышать 100!"
+            ),
         ],
     )
 
     class Meta:
         constraints = [
-            UniqueConstraint(fields=["recipe", "ingredient"], name="recipe_ingredient_unique")
+            UniqueConstraint(
+                fields=["recipe", "ingredient"],
+                name="recipe_ingredient_unique"
+            )
         ]
 
 
 class RecipeTag(models.Model):
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, verbose_name="Рецепт")
-    tag = models.ForeignKey(Tag, on_delete=models.CASCADE, verbose_name="Тег")
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        verbose_name="Рецепт"
+    )
+    tag = models.ForeignKey(
+        Tag, on_delete=models.CASCADE,
+        verbose_name="Тег"
+    )
 
     class Meta:
         constraints = [
-            UniqueConstraint(fields=["recipe", "tag"], name="recipe_tag_unique")
+            UniqueConstraint(
+                fields=["recipe", "tag"],
+                name="recipe_tag_unique"
+            )
         ]
 
 
@@ -118,7 +149,10 @@ class ShoppingCart(models.Model):
 
     class Meta:
         constraints = [
-            UniqueConstraint(fields=["user", "recipe"], name="user_shoppingcart_unique")
+            UniqueConstraint(
+                fields=["user", "recipe"],
+                name="user_shoppingcart_unique"
+            )
         ]
 
 
@@ -138,5 +172,8 @@ class Favorite(models.Model):
 
     class Meta:
         constraints = [
-            UniqueConstraint(fields=["user", "recipe"], name="user_favorite_unique")
+            UniqueConstraint(
+                fields=["user", "recipe"],
+                name="user_favorite_unique"
+            )
         ]

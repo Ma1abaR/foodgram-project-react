@@ -15,7 +15,11 @@ class Command(BaseCommand):
 
             if "color" in jsondata[0]:
                 tags_to_create = [
-                    Tag(name=line["name"], color=line["color"], slug=line["slug"])
+                    Tag(
+                        name=line["name"],
+                        color=line["color"],
+                        slug=line["slug"]
+                    )
                     for line in jsondata
                     if not Tag.objects.filter(slug=line["slug"]).exists()
                 ]
@@ -24,11 +28,13 @@ class Command(BaseCommand):
             elif "measurement_unit" in jsondata[0]:
                 ingredients_to_create = [
                     Ingredient(
-                        name=line["name"], measurement_unit=line["measurement_unit"]
+                        name=line["name"],
+                        measurement_unit=line["measurement_unit"]
                     )
                     for line in jsondata
                     if not Ingredient.objects.filter(
-                        name=line["name"], measurement_unit=line["measurement_unit"]
+                        name=line["name"],
+                        measurement_unit=line["measurement_unit"]
                     ).exists()
                 ]
                 Ingredient.objects.bulk_create(ingredients_to_create)
