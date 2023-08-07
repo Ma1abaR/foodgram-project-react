@@ -45,4 +45,12 @@ sudo docker-compose exec backend python manage.py collectstatic --no-input
 sudo docker-compose exec backend python manage.py loadmodels --path 'recipes/data/ingredients.json'
 sudo docker-compose exec backend python manage.py loadmodels --path 'recipes/data/tags.json'
 ```
-7. Готово! Откройте веб-браузер и перейдите по адресу http://localhost:9090/
+7. Проект развернут на сервере: http://cookfoodeat.myftp.org
+8. Суперпользователь:
+```
+email: extrimiti@yandex.ru
+password: ppp0633856
+```
+
+### Проект выполнил студент Яндекс Практикума
+### [Artur](https://github.com/Ma1abaR)
