@@ -41,7 +41,7 @@ jobs:
         uses: docker/build-push-action@v2 
         with:
           push: true
-          context: ./backend/foodgram/
+          context: ./backend
           tags: ma1abar/backend:latest
 
   deploy:
@@ -56,8 +56,8 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
           script: |
-            sudo docker pull ma1abar/backend:v1
-            sudo docker pull ma1abar/frontend:v1
+            sudo docker pull ma1abar/backend:latest
+            sudo docker pull ma1abar/frontend:latest
             sudo docker-compose stop
             sudo docker-compose rm backend
             sudo docker-compose rm frontend
