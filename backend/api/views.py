@@ -36,10 +36,10 @@ class SubscribeView(APIView):
             data=data,
             context={'request': request}
         )
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
     def delete(self, request, id):
         author = get_object_or_404(User, id=id)
@@ -59,9 +59,13 @@ class ShowSubscriptionsView(ListAPIView):
     permission_classes = [IsAuthenticated, ]
     pagination_class = CustomPagination
 
-    def get(self, request):
-        user = request.user
+    def get_queryset(self):
+        user = self.request.user
         queryset = User.objects.filter(author__user=user)
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
         page = self.paginate_queryset(queryset)
         serializer = ShowSubscriptionsSerializer(
             page, many=True, context={'request': request}
@@ -80,16 +84,17 @@ class FavoriteView(APIView):
             'user': request.user.id,
             'recipe': id
         }
-        if not Favorite.objects.filter(
-           user=request.user, recipe__id=id).exists():
-            serializer = FavoriteSerializer(
-                data=data, context={'request': request}
+        if not Favorite.objects.filter(user=request.user, recipe__id=id).exists():
+            serializer = FavoriteSerializer(data=data, context={'request': request})
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(
+                {'detail': 'Рецепт уже добавлен в избранное'},
+                status=status.HTTP_400_BAD_REQUEST
             )
-            if serializer.is_valid():
-                serializer.save()
-                return Response(
-                    serializer.data, status=status.HTTP_201_CREATED)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+
 
     def delete(self, request, id):
         recipe = get_object_or_404(Recipe, id=id)
@@ -97,14 +102,18 @@ class FavoriteView(APIView):
            user=request.user, recipe=recipe).exists():
             Favorite.objects.filter(user=request.user, recipe=recipe).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(
+                {'detail': 'Рецепт не найден в избранном'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     """ Отображение тегов. """
 
     permission_classes = [AllowAny, ]
-    pagination_class = None
     serializer_class = TagSerializer
     queryset = Tag.objects.all()
 
@@ -134,11 +143,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeSerializer
         return CreateRecipeSerializer
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context.update({'request': self.request})
-        return context
-
 
 class ShoppingCartView(APIView):
     """ Добавление рецепта в корзину или его удаление. """
@@ -151,44 +155,37 @@ class ShoppingCartView(APIView):
             'recipe': id
         }
         recipe = get_object_or_404(Recipe, id=id)
-        if not ShoppingCart.objects.filter(
-           user=request.user, recipe=recipe).exists():
-            serializer = ShoppingCartSerializer(
-                data=data, context={'request': request}
-            )
-            if serializer.is_valid():
-                serializer.save()
-                return Response(
-                    serializer.data, status=status.HTTP_201_CREATED)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        if not ShoppingCart.objects.filter(user=request.user, recipe=recipe).exists():
+            serializer = ShoppingCartSerializer(data=data, context={'request': request})
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response({'detail': 'Рецепт уже добавлен в корзину'}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, id):
         recipe = get_object_or_404(Recipe, id=id)
-        if ShoppingCart.objects.filter(
-           user=request.user, recipe=recipe).exists():
-            ShoppingCart.objects.filter(
-                user=request.user, recipe=recipe
-            ).delete()
+        if ShoppingCart.objects.filter(user=request.user, recipe=recipe).exists():
+            ShoppingCart.objects.filter(user=request.user, recipe=recipe).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        return Response({'detail': 'Рецепт не найден в корзине'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])
 def download_shopping_cart(request):
-    ingredient_list = "Cписок покупок:"
-    ingredients = RecipeIngredient.objects.filter(
+    shopping_list = "Список покупок:"
+    recipe_ingredients = RecipeIngredient.objects.filter(
         recipe__shopping_cart__user=request.user
     ).values(
         'ingredient__name', 'ingredient__measurement_unit'
     ).annotate(amount=Sum('amount'))
-    for num, i in enumerate(ingredients):
-        ingredient_list += (
-            f"\n{i['ingredient__name']} - "
-            f"{i['amount']} {i['ingredient__measurement_unit']}"
+    for index, recipe_ingredient in enumerate(recipe_ingredients):
+        shopping_list += (
+            f"\n{recipe_ingredient['ingredient__name']} - "
+            f"{recipe_ingredient['amount']} {recipe_ingredient['ingredient__measurement_unit']}"
         )
-        if num < ingredients.count() - 1:
-            ingredient_list += ', '
-    file = 'shopping_list'
-    response = HttpResponse(ingredient_list, 'Content-Type: application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="{file}.pdf"'
+        if index < len(recipe_ingredients) - 1:
+            shopping_list += ', '
+    file_name = 'shopping_list'
+    response = HttpResponse(shopping_list, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{file_name}.pdf"'
     return response

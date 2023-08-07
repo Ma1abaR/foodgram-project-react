@@ -15,21 +15,20 @@ class Command(BaseCommand):
 
         with open(file_path, encoding='utf-8') as f:
             jsondata = json.load(f)
+
             if 'color' in jsondata[0]:
-                for line in jsondata:
-                    if not Tag.objects.filter(
-                       slug=line['slug']).exists():
-                        Tag.objects.create(
-                            name=line['name'],
-                            color=line['color'],
-                            slug=line['slug'],
-                        )
+                tags_to_create = [
+                    Tag(name=line['name'], color=line['color'], slug=line['slug'])
+                    for line in jsondata
+                    if not Tag.objects.filter(slug=line['slug']).exists()
+                ]
+                Tag.objects.bulk_create(tags_to_create)
+
             elif 'measurement_unit' in jsondata[0]:
-                for line in jsondata:
-                    if not Ingredient.objects.filter(
-                       name=line['name'],
-                       measurement_unit=line['measurement_unit']).exists():
-                        Ingredient.objects.create(
-                            name=line['name'],
-                            measurement_unit=line['measurement_unit']
-                        )
+                ingredients_to_create = [
+                    Ingredient(name=line['name'], measurement_unit=line['measurement_unit'])
+                    for line in jsondata
+                    if
+                    not Ingredient.objects.filter(name=line['name'], measurement_unit=line['measurement_unit']).exists()
+                ]
+                Ingredient.objects.bulk_create(ingredients_to_create)
