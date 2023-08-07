@@ -7,8 +7,6 @@ User = get_user_model()
 
 
 class Ingredient(models.Model):
-    """Модель ингредиента."""
-
     name = models.CharField("Название ингредиента", max_length=200)
     measurement_unit = models.CharField("Единицы измерения", max_length=200)
 
@@ -18,14 +16,13 @@ class Ingredient(models.Model):
         verbose_name_plural = "Ингредиенты"
         constraints = [
             UniqueConstraint(
-                fields=["name", "measurement_unit"], name="ingredient_name_unit_unique"
+                fields=["name", "measurement_unit"],
+                name="ingredient_name_unit_unique",
             )
         ]
 
 
 class Tag(models.Model):
-    """Модель тега."""
-
     name = models.CharField("Название тега", unique=True, max_length=200)
     color = models.CharField("Цвет", unique=True, max_length=7)
     slug = models.SlugField("Slug", unique=True, max_length=200)
@@ -40,8 +37,6 @@ class Tag(models.Model):
 
 
 class Recipe(models.Model):
-    """Модель рецепта."""
-
     tags = models.ManyToManyField(
         Tag, through="RecipeTag", verbose_name="Теги", related_name="tags"
     )
@@ -60,12 +55,8 @@ class Recipe(models.Model):
     cooking_time = models.PositiveIntegerField(
         verbose_name="Время приготовления",
         validators=[
-            MinValueValidator(
-                1, message="Время приготовления должно быть не менее 1 минуты!"
-            ),
-            MaxValueValidator(
-                720, message="Время приготовления не должно превышать 720 минут!"
-            ),
+            MinValueValidator(1, message="Время приготовления должно быть не менее 1 минуты!"),
+            MaxValueValidator(720, message="Время приготовления не должно превышать 720 минут!"),
         ],
     )
     pub_date = models.DateTimeField(
@@ -83,8 +74,6 @@ class Recipe(models.Model):
 
 
 class RecipeIngredient(models.Model):
-    """Модель связи ингредиента и рецепта."""
-
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, verbose_name="Рецепт")
     ingredient = models.ForeignKey(
         Ingredient, on_delete=models.CASCADE, verbose_name="Ингредиент"
@@ -92,26 +81,18 @@ class RecipeIngredient(models.Model):
     amount = models.IntegerField(
         "Количество",
         validators=[
-            MinValueValidator(
-                1, message="Количество ингредиента должно быть больше 0!"
-            ),
-            MaxValueValidator(
-                100, message="Количество ингредиентов не должно превышать 100!"
-            ),
+            MinValueValidator(1, message="Количество ингредиента должно быть больше 0!"),
+            MaxValueValidator(100, message="Количество ингредиентов не должно превышать 100!"),
         ],
     )
 
     class Meta:
         constraints = [
-            UniqueConstraint(
-                fields=["recipe", "ingredient"], name="recipe_ingredient_unique"
-            )
+            UniqueConstraint(fields=["recipe", "ingredient"], name="recipe_ingredient_unique")
         ]
 
 
 class RecipeTag(models.Model):
-    """Модель связи тега и рецепта."""
-
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, verbose_name="Рецепт")
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE, verbose_name="Тег")
 
@@ -122,8 +103,6 @@ class RecipeTag(models.Model):
 
 
 class ShoppingCart(models.Model):
-    """Модель корзины."""
-
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -144,8 +123,6 @@ class ShoppingCart(models.Model):
 
 
 class Favorite(models.Model):
-    """Модель избранного."""
-
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
