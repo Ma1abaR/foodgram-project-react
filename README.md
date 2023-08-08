@@ -43,10 +43,11 @@ sudo docker-compose exec backend python manage.py collectstatic --no-input
 ```
 6. Загрузите данные о ингредиентах и тегах из файлов json: 
 ```
+sudo docker-compose restart backend
 sudo docker-compose exec backend python manage.py loadmodels --path 'recipes/data/ingredients.json'
 sudo docker-compose exec backend python manage.py loadmodels --path 'recipes/data/tags.json'
 ```
-7. Проект развернут на сервере: http://cookfoodeat.myftp.org
+7. Проект развернут на сервере: https://cookfoodeat.myftp.org
 8. Суперпользователь:
 ```
 email: extrimiti@yandex.ru
